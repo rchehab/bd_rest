@@ -2,15 +2,25 @@
 from usuario.models import Usuario
 from ocorrencia.models import Categoria, Ocorrencia
 from rest_framework import serializers
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
-    
+class CategoriaSerializer(serializers.ModelSerializer):
+
+  class Meta:
+      model = Categoria
+      fields = ('id', 'tipo')
+
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
         fields = ('id', 'username')
 
+class GroupSerializer(serializers.ModelSerializer):
+
+    class Meta:
+      model = Group
+      fields = ('id', 'name')
 
 class UsuarioSerializer(serializers.ModelSerializer):
 
@@ -61,14 +71,12 @@ class UsuarioSerializer(serializers.ModelSerializer):
     label='Data de Nascimento',
   )
 
-
-
   class Meta:
     model = Usuario
-    fields = [
-		              'user',
+    fields = [    'id',
+                  'user',
                   'nome',
-		              'login',
+                  'login',
                   'cpf',
                   'rg',
                   'matricula',
