@@ -13,6 +13,11 @@ from api.serializers import UsuarioSerializer, OcorrenciaSerializer, CategoriaSe
 from rest_framework import permissions
 from django.contrib.auth.models import User, Group
 
+from django.http import Http404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
 
 #Adicionar resposta, descricao
 #usuario feito no API nao consegue acessar o web
@@ -23,14 +28,6 @@ from django.contrib.auth.models import User, Group
 #autenticação
 
 ############################ USER ##############################################
-class UserCreateAPIView(CreateAPIView):
-    '''
-    
-    Crie um novo user
-    
-    '''
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
 
 class UserDetailAPIView(RetrieveAPIView):
     '''
@@ -46,26 +43,6 @@ class UserListAPIView(ListAPIView):
     '''
     
     Lista dos user
-    
-    '''
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
-class UserUpdateAPIView(RetrieveUpdateAPIView):
-    '''
-    
-    Edite um user 
-    
-    '''
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
-class UserDeleteAPIView(DestroyAPIView):
-    '''
-    
-    Delete um user
     
     '''
     queryset = User.objects.all()
@@ -95,54 +72,54 @@ class GroupListAPIView(ListAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 ############################ USUÁRIO ##############################################
-class UsuarioCreateAPIView(CreateAPIView):
-    '''
-    
-    Crie um novo usuário
-    
-    '''
-    queryset = Usuario.objects.all()
-    serializer_class = UsuarioSerializer
+class UsuarioList(APIView):
+    """
+    List all snippets, or create a new snippet.
+    """
+    def get(self, request, format=None):
+        usuario = Usuario.objects.all()
+        serializer = UsuarioSerializer(usuario, many=True)
+        return Response(serializer.data)
 
-class UsuarioDetailAPIView(RetrieveAPIView):
-    '''
-    
-    Detalhes dos usuários
-    
-    '''
-    queryset = Usuario.objects.all()
-    serializer_class = UsuarioSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    def post(self, request, format=None):
+        u = User.objects.create(username=request.data['login'],
+            email = request.data['email'])
+        u.set_password(request.data['senha'])
+        request.data['user'] = u.id
+        serializer = UsuarioSerializer(data=request.data)
+        if serializer.is_valid():
+            u.save()
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UsuarioListAPIView(ListAPIView):
-    '''
-    
-    Lista dos usuários
-    
-    '''
-    queryset = Usuario.objects.all()
-    serializer_class = UsuarioSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+class UsuarioDetail(APIView):
+    """
+    Retrieve, update or delete a snippet instance.
+    """
+    def get_object(self, pk):
+        try:
+            return Usuario.objects.get(pk=pk)
+        except Usuario.DoesNotExist:
+            raise Http404
 
-class UsuarioUpdateAPIView(RetrieveUpdateAPIView):
-    '''
+    def get(self, request, pk, format=None):
+        usuario = self.get_object(pk)
+        serializer = UsuarioSerializer(usuario)
+        return Response(serializer.data)
 
-    Edite um usuário 
+    def put(self, request, pk, format=None):
+        usuario = self.get_object(pk)
+        serializer = UsuarioSerializer(usuario, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    '''
-    queryset = Usuario.objects.all()
-    serializer_class = UsuarioSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
-class UsuarioDeleteAPIView(DestroyAPIView):
-    '''
-
-    Delete um usuário
-
-    '''
-    queryset = Usuario.objects.all()
-    serializer_class = UsuarioSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    def delete(self, request, pk, format=None):
+        usuario = self.get_object(pk)
+        usuario.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 ############################ OCORRÊNCIA ##############################################
 
@@ -247,3 +224,4 @@ class CategoriaDeleteAPIView(DestroyAPIView):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    
