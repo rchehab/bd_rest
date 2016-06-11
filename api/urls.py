@@ -8,11 +8,6 @@ from .views import(
     GroupListAPIView,
     UsuarioDetail,
     UsuarioList,
-    #UsuarioCreateAPIView,
-    #UsuarioDetailAPIView,
-    #UsuarioListAPIView,
-    #UsuarioUpdateAPIView,
-    #UsuarioDeleteAPIView,
     OcorrenciaCreateAPIView,
     OcorrenciaDetailAPIView,
     OcorrenciaListAPIView,
@@ -36,11 +31,6 @@ urlpatterns = [
     
     url(r'^usuario$', UsuarioList.as_view(), name="Usuario List"),
     url(r'^usuario/(?P<pk>\d+)/$', UsuarioDetail.as_view(), name="Usuario Detail"),
-    #url(r'^usuario$', UsuarioListAPIView.as_view(), name="Usuario List"),
-    #url(r'^usuario/create/$', UsuarioCreateAPIView.as_view(), name= "Create Usuario"),
-    #url(r'^usuario/(?P<pk>\d+)/$', UsuarioDetailAPIView.as_view(), name="Usuario Detail"),
-    #url(r'^usuario/(?P<pk>\d+)/edit/$', UsuarioUpdateAPIView.as_view(), name="Usuario Update"),
-    #url(r'^usuario/(?P<pk>\d+)/delete/$',UsuarioDeleteAPIView.as_view(), name="Usuario Delete"),
 
     url(r'^ocorrencia$', OcorrenciaListAPIView.as_view(), name="Ocorrencia List"),
     url(r'^ocorrencia/create/$', OcorrenciaCreateAPIView.as_view(), name= "Create Ocorrencia"),

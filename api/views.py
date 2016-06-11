@@ -12,6 +12,7 @@ from ocorrencia.models import Categoria, Ocorrencia
 from api.serializers import UsuarioSerializer, OcorrenciaSerializer, CategoriaSerializer, UserSerializer, GroupSerializer
 from rest_framework import permissions
 from django.contrib.auth.models import User, Group
+from api.password import password
 
 from django.http import Http404
 from rest_framework.views import APIView
@@ -84,9 +85,16 @@ class UsuarioList(APIView):
     def post(self, request, format=None):
         u = User.objects.create(username=request.data['login'],
             email = request.data['email'])
+
         u.set_password(request.data['senha'])
         request.data['user'] = u.id
+
+        hashed_password = password.hash_this(request.data['senha'])
+        
         serializer = UsuarioSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.validated_data['senha'] = hashed_password
+
         if serializer.is_valid():
             u.save()
             serializer.save()
@@ -111,23 +119,32 @@ class UsuarioDetail(APIView):
     def put(self, request, pk, format=None):
         usuario = self.get_object(pk)
         serializer = UsuarioSerializer(usuario, data=request.data)
+        
         if serializer.is_valid():
+            if request.data['login'] != usuario.login or request.data['email'] != usuario.email or request.data['senha'] != usuario.senha:
+                user = User.objects.get(pk=usuario.user.pk)
+                user.username = request.data['login']
+                user.email = request.data['email']
+                user.set_password(request.data['senha'])
+                user.save()
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
         usuario = self.get_object(pk)
+        serializer = UsuarioSerializer(usuario)
+        u = User.objects.get(id = serializer.data['user'])
+        u.delete()
         usuario.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(status = status.HTTP_204_NO_CONTENT)
 
 ############################ OCORRÊNCIA ##############################################
 
 class OcorrenciaCreateAPIView(CreateAPIView):
     '''
-
     Crie uma nova ocorrência
-
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
@@ -135,9 +152,7 @@ class OcorrenciaCreateAPIView(CreateAPIView):
 
 class OcorrenciaDetailAPIView(RetrieveAPIView):
     '''
-
     Informações das ocorrências
-
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
@@ -145,9 +160,7 @@ class OcorrenciaDetailAPIView(RetrieveAPIView):
 
 class OcorrenciaListAPIView(ListAPIView):
     '''
-
     Liste as ocorrências
-
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
@@ -155,9 +168,7 @@ class OcorrenciaListAPIView(ListAPIView):
 
 class OcorrenciaUpdateAPIView(RetrieveUpdateAPIView):
     '''
-
     Edite ocorrência
-
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
@@ -165,9 +176,7 @@ class OcorrenciaUpdateAPIView(RetrieveUpdateAPIView):
 
 class OcorrenciaDeleteAPIView(DestroyAPIView):
     '''
-
     Delete uma ocorrência
-
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
@@ -177,9 +186,7 @@ class OcorrenciaDeleteAPIView(DestroyAPIView):
 
 class CategoriaCreateAPIView(CreateAPIView):
     '''
-
     Crie uma nova categoria
-
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
@@ -187,9 +194,7 @@ class CategoriaCreateAPIView(CreateAPIView):
 
 class CategoriaDetailAPIView(RetrieveAPIView):
     '''
-
     Informações das categorias
-
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
@@ -197,9 +202,7 @@ class CategoriaDetailAPIView(RetrieveAPIView):
 
 class CategoriaListAPIView(ListAPIView):
     '''
-
     Liste as categorias
-
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
@@ -207,9 +210,7 @@ class CategoriaListAPIView(ListAPIView):
 
 class CategoriaUpdateAPIView(RetrieveUpdateAPIView):
     '''
-
     Edite uma categoria
-
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
@@ -217,11 +218,8 @@ class CategoriaUpdateAPIView(RetrieveUpdateAPIView):
 
 class CategoriaDeleteAPIView(DestroyAPIView):
     '''
-
     Delete uma categoria
-
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-    
