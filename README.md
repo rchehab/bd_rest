@@ -6,6 +6,4 @@
 - CRUD (criar, listar, editar, deletar) categorias
 - CRUD (criar, listar) grupos
 
-@ Problemas:
-- Autenticação de usuário
-- Criação de usuário
+
