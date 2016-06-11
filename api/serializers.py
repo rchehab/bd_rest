@@ -74,17 +74,17 @@ class UsuarioSerializer(serializers.ModelSerializer):
   class Meta:
     model = Usuario
     fields = [    'id',
-                  'user',
+		              'cpf',
                   'nome',
-                  'login',
-                  'cpf',
-                  'rg',
+		              'rg',
                   'matricula',
                   'sexo',
                   'email',
+                  'login',
                   'senha',
                   'status',
                   'data_nasc',
+                  'user',
                   'grupo_usuario',
                   ]
 
@@ -123,21 +123,23 @@ class OcorrenciaSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Ocorrencia
-    fields = [  'usuario_ID',
-                'tb_categoria_ID',
+    fields = [  'id',
                 'data',
                 'hora',
-                'descricao',
                 'latitude',
                 'longitude',
+                'descricao', 
                 'foto',
-                'emergencia',
-                'vitimado',
                 'validade',
                 'atendida',
+                'emergencia',
+                'vitimado',
                 'repetida',
-                'vigilante_ID',
                 'resposta',
+                'usuario_ID',
+                'vigilante_ID',
+                'tb_categoriaID',
+                
               ]
               
             
