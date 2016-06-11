@@ -12,6 +12,7 @@ from ocorrencia.models import Categoria, Ocorrencia
 from api.serializers import UsuarioSerializer, OcorrenciaSerializer, CategoriaSerializer, UserSerializer, GroupSerializer
 from rest_framework import permissions
 from django.contrib.auth.models import User, Group
+from api.password import password
 
 from django.http import Http404
 from rest_framework.views import APIView
@@ -84,9 +85,16 @@ class UsuarioList(APIView):
     def post(self, request, format=None):
         u = User.objects.create(username=request.data['login'],
             email = request.data['email'])
+
         u.set_password(request.data['senha'])
         request.data['user'] = u.id
+
+        hashed_password = password.hash_this(request.data['senha'])
+        
         serializer = UsuarioSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.validated_data['senha'] = hashed_password
+
         if serializer.is_valid():
             u.save()
             serializer.save()

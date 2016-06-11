@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^user$', UserListAPIView.as_view(), name="User List"),
     url(r'^user/(?P<pk>\d+)/$', UserDetailAPIView.as_view(), name="User Detail"),
 
+
     url(r'^group$', GroupListAPIView.as_view(), name="Group List"),
     url(r'^group/(?P<pk>\d+)/$', GroupDetailAPIView.as_view(), name="Group Detail"),
 
