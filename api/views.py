@@ -42,11 +42,6 @@ class UserDetailAPIView(RetrieveAPIView):
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
-    '''
-
-    Lista dos user
-
-    '''
 class UserListAPIView(ListAPIView):
     '''
     
@@ -129,125 +124,126 @@ class UsuarioListAPIView(ListAPIView):
     serializer_class = UsuarioSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
+class UsuarioUpdateAPIView(RetrieveUpdateAPIView):
     '''
 
     Edite um usuário 
 
     '''
-class UsuarioUpdateAPIView(RetrieveUpdateAPIView):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
+class UsuarioDeleteAPIView(DestroyAPIView):
     '''
 
     Delete um usuário
 
     '''
-class UsuarioDeleteAPIView(DestroyAPIView):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 ############################ OCORRÊNCIA ##############################################
+
+class OcorrenciaCreateAPIView(CreateAPIView):
     '''
 
     Crie uma nova ocorrência
 
     '''
-class OcorrenciaCreateAPIView(CreateAPIView):
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)       
 
+class OcorrenciaDetailAPIView(RetrieveAPIView):
     '''
 
     Informações das ocorrências
 
     '''
-class OcorrenciaDetailAPIView(RetrieveAPIView):
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
+class OcorrenciaListAPIView(ListAPIView):
     '''
 
     Liste as ocorrências
 
     '''
-class OcorrenciaListAPIView(ListAPIView):
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
+class OcorrenciaUpdateAPIView(RetrieveUpdateAPIView):
     '''
 
     Edite ocorrência
 
     '''
-class OcorrenciaUpdateAPIView(RetrieveUpdateAPIView):
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
+class OcorrenciaDeleteAPIView(DestroyAPIView):
     '''
 
     Delete uma ocorrência
 
     '''
-class OcorrenciaDeleteAPIView(DestroyAPIView):
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 ############################ CATEGORIA ##############################################
 
+class CategoriaCreateAPIView(CreateAPIView):
     '''
 
     Crie uma nova categoria
 
     '''
-class CategoriaCreateAPIView(CreateAPIView):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)       
 
+class CategoriaDetailAPIView(RetrieveAPIView):
     '''
 
     Informações das categorias
 
     '''
-class CategoriaDetailAPIView(RetrieveAPIView):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
+class CategoriaListAPIView(ListAPIView):
     '''
 
     Liste as categorias
 
     '''
-class CategoriaListAPIView(ListAPIView):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
+class CategoriaUpdateAPIView(RetrieveUpdateAPIView):
     '''
 
     Edite uma categoria
 
     '''
-class CategoriaUpdateAPIView(RetrieveUpdateAPIView):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
+class CategoriaDeleteAPIView(DestroyAPIView):
     '''
 
     Delete uma categoria
 
     '''
-class CategoriaDeleteAPIView(DestroyAPIView):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
