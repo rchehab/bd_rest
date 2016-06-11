@@ -14,7 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username')
+        fields = ('id', 'username', 'password','email')
 
 class GroupSerializer(serializers.ModelSerializer):
 
@@ -61,7 +61,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
   )
 
   sexo = serializers.ChoiceField(
-    choices=['Masculino', 'Feminino'],
+    choices=['M','F'],
     
   )
 
@@ -139,7 +139,7 @@ class OcorrenciaSerializer(serializers.ModelSerializer):
                 'usuario_ID',
                 'vigilante_ID',
                 'tb_categoriaID',
-                
+
               ]
               
             
