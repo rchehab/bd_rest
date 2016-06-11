@@ -1,27 +1,29 @@
 # -*- coding: utf-8 -*- 
+# SERIALIZERS DA API - UNB ALERTA - REST FRAMEWORK
+
+
+# Importando os models preestabelecidos pelo Django e os models do UnB Alerta
 from usuario.models import Usuario
 from ocorrencia.models import Categoria, Ocorrencia
-from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 
-class CategoriaSerializer(serializers.ModelSerializer):
+from rest_framework import serializers
 
-  class Meta:
-      model = Categoria
-      fields = ('id', 'tipo')
-
+############################ USER ##############################################
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'password','email')
+        fields = ('id', 'username', 'password', 'email')
 
+############################ GROUP ##############################################
 class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
       model = Group
       fields = ('id', 'name')
 
+############################ USUÁRIO ##############################################
 class UsuarioSerializer(serializers.ModelSerializer):
 
   nome = serializers.CharField(
@@ -61,8 +63,8 @@ class UsuarioSerializer(serializers.ModelSerializer):
   )
 
   sexo = serializers.ChoiceField(
-    choices=['M','F'],
-    
+    choices=['M','F', 'm', 'f'],
+  
   )
 
   data_nasc = serializers.DateField(
@@ -73,21 +75,10 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Usuario
-    fields = [    'id',
-		              'cpf',
-                  'nome',
-		              'rg',
-                  'matricula',
-                  'sexo',
-                  'email',
-                  'login',
-                  'senha',
-                  'status',
-                  'data_nasc',
-                  'user',
-                  'grupo_usuario',
-                  ]
+    fields = ( 'id', 'cpf', 'nome', 'rg','matricula','sexo','email','login','senha','status',
+                  'data_nasc','user', 'grupo_usuario',)
 
+############################ OCORRÊNCIA ##############################################
 class OcorrenciaSerializer(serializers.ModelSerializer):
 
   data = serializers.DateField(
@@ -123,24 +114,12 @@ class OcorrenciaSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Ocorrencia
-    fields = [  'id',
-                'data',
-                'hora',
-                'latitude',
-                'longitude',
-                'descricao', 
-                'foto',
-                'validade',
-                'atendida',
-                'emergencia',
-                'vitimado',
-                'repetida',
-                'resposta',
-                'usuario_ID',
-                'vigilante_ID',
-                'tb_categoriaID',
-
-              ]
-              
+    fields = ( 'id', 'data', 'hora', 'latitude', 'longitude', 'descricao', 'foto', 'validade',
+                'atendida', 'emergencia', 'vitimado', 'repetida', 'resposta', 'usuario_ID', 'tb_categoria_ID')
             
-                
+############################ CATEGORIA ##############################################
+class CategoriaSerializer(serializers.ModelSerializer):
+
+  class Meta:
+      model = Categoria
+      fields = ('id', 'tipo')

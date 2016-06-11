@@ -1,128 +1,175 @@
 # -*- coding: utf-8 -*- 
+# VIEWS DA API - UNB ALERTA - REST FRAMEWORK 
+
+
+# Importando generics da rest framework para a criação da APIView
 from rest_framework.generics import (
+    
     CreateAPIView,
     DestroyAPIView,
     ListAPIView,
     RetrieveAPIView,
     RetrieveUpdateAPIView
-    )
 
+    ) 
+
+from rest_framework.views import APIView
+
+# Importando os models preestabelecidos pelo Django e os models do UnB Alerta
+from django.contrib.auth.models import User, Group
 from usuario.models import Usuario
 from ocorrencia.models import Categoria, Ocorrencia
-from api.serializers import UsuarioSerializer, OcorrenciaSerializer, CategoriaSerializer, UserSerializer, GroupSerializer
+
+# Importando os serializers de cada classe usada
+from api.serializers import (
+
+    UsuarioSerializer, 
+    OcorrenciaSerializer, 
+    CategoriaSerializer, 
+    UserSerializer, 
+    GroupSerializer
+
+    )
+
+# Importando arquivo com as permissões de User 
 from rest_framework import permissions
-from django.contrib.auth.models import User, Group
+
+# Importando classe password, utilizada para o hashing da senha
 from api.password import password
 
+# Outros imports 
 from django.http import Http404
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
 
-#Adicionar resposta, descricao
-#usuario feito no API nao consegue acessar o web
-#criacao de usuario -> atualizar
-#disparidades no BD
-#Analisar campos ocorrencia
-#permissoes
-#autenticação
-
 ############################ USER ##############################################
-
+# Listagem de Users internos do Django bem quanto seus detalhes.
 class UserDetailAPIView(RetrieveAPIView):
     '''
     
-    Detalhes dos user
+    Detalhes dos users
     
     '''
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    queryset = User.objects.all() # Retorna todos os User
+    serializer_class = UserSerializer # Utiliza a classe serializer User
+    permission_classes = (permissions.IsAuthenticated,) 
 
 class UserListAPIView(ListAPIView):
     '''
     
-    Lista dos user
+    Lista dos users
     
     '''
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+    queryset = User.objects.all() # Retorna todos os User
+    serializer_class = UserSerializer # Utiliza a classe serializer User
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 ############################ GROUP ##############################################
+# Listagem de Groups internos do Django bem quanto seus detalhes.
 class GroupDetailAPIView(RetrieveAPIView):
     '''
     
-    Detalhes dos grupos de usuários
+    Detalhes dos grupos de users
     
     '''
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
+    queryset = Group.objects.all() # Retorna todos os Groups
+    serializer_class = GroupSerializer # Utiliza a classe serializer Group
     permission_classes = (permissions.IsAuthenticated,)
 
 
 class GroupListAPIView(ListAPIView):
     '''
     
-    Lista dos grupos
+    Lista dos grupos de users
     
     '''
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
+    queryset = Group.objects.all() # Retorna todos os Groups
+    serializer_class = GroupSerializer # Utiliza a classe serializer Group
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 ############################ USUÁRIO ##############################################
+# Listagem de Usuários do UnB Alerta com funções adicionais
+
 class UsuarioList(APIView):
     """
-    List all snippets, or create a new snippet.
+
+    Lista todos os usuários e permite a criação.
+
     """
-    def get(self, request, format=None):
+    # Função get: Retorna todos os usuários do banco
+    def get(self, request, format = None):
+
         usuario = Usuario.objects.all()
-        serializer = UsuarioSerializer(usuario, many=True)
+        serializer = UsuarioSerializer(usuario, many = True)
         return Response(serializer.data)
 
-    def post(self, request, format=None):
-        u = User.objects.create(username=request.data['login'],
-            email = request.data['email'])
+    # Função post: Cria um novo usuário 
+    def post(self, request, format = None):
+        # A partir das informações fornecidas precisamos criar um user
+        # Um user interno do Django segue os padroes do Django de autenticação
+        u = User.objects.create(
+                username = request.data['login'], # Passamos o login
+                email = request.data['email'] # Passamos o email
+            )
 
+        # Utilizando a encryption do Django podemos usar a função
+        # set_password para passar a senha utilizada para o registro
         u.set_password(request.data['senha'])
+
+        # Mudamos a fk de user na request por id
+        # Ex: Usuario.user = User.id
         request.data['user'] = u.id
 
+        # Chamamos a função de hashing sobre a senha
         hashed_password = password.hash_this(request.data['senha'])
-        
-        serializer = UsuarioSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.validated_data['senha'] = hashed_password
 
+        # Finalmente pode-se criar o serializer correspondente ao usuario
+        serializer = UsuarioSerializer(data = request.data)
+
+        # Se o serializer é valido receberá a senha com o hashing feito
+        if serializer.is_valid(): 
+            serializer.validated_data['senha'] = hashed_password 
+
+        # Se o serializer permanecer válido podemos salvos o novo user e o novo usuário
         if serializer.is_valid():
             u.save()
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED) #Sucedeu
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) #Falhou
+
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 class UsuarioDetail(APIView):
     """
-    Retrieve, update or delete a snippet instance.
+
+    Acessa um usuário específico com sua id, pode editar e deletar.
+
     """
+    # Função que retorna um objeto Usuário
     def get_object(self, pk):
         try:
-            return Usuario.objects.get(pk=pk)
+            return Usuario.objects.get(pk = pk)
         except Usuario.DoesNotExist:
             raise Http404
 
-    def get(self, request, pk, format=None):
+    # Função que retorna os detalhes sobre um usuário específico
+    def get(self, request, pk, format = None):
         usuario = self.get_object(pk)
         serializer = UsuarioSerializer(usuario)
         return Response(serializer.data)
 
-    def put(self, request, pk, format=None):
+    # Função que edita os valores de um usuário específico
+    def put(self, request, pk, format = None):
+        # Cria uma referência ao usuário escolhido
         usuario = self.get_object(pk)
-        serializer = UsuarioSerializer(usuario, data=request.data)
+        serializer = UsuarioSerializer(usuario, data = request.data)
         
+        # Se o serailizer for valido poderá editar os campos
         if serializer.is_valid():
             if request.data['login'] != usuario.login or request.data['email'] != usuario.email or request.data['senha'] != usuario.senha:
-                user = User.objects.get(pk=usuario.user.pk)
+                user = User.objects.get(pk = usuario.user.pk)
                 user.username = request.data['login']
                 user.email = request.data['email']
                 user.set_password(request.data['senha'])
@@ -131,6 +178,7 @@ class UsuarioDetail(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    # Deleta um usuário e seu user associado
     def delete(self, request, pk, format=None):
         usuario = self.get_object(pk)
         serializer = UsuarioSerializer(usuario)
@@ -141,10 +189,12 @@ class UsuarioDetail(APIView):
         return Response(status = status.HTTP_204_NO_CONTENT)
 
 ############################ OCORRÊNCIA ##############################################
-
+# CRUD ocorrências
 class OcorrenciaCreateAPIView(CreateAPIView):
     '''
+
     Crie uma nova ocorrência
+
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
@@ -152,7 +202,9 @@ class OcorrenciaCreateAPIView(CreateAPIView):
 
 class OcorrenciaDetailAPIView(RetrieveAPIView):
     '''
+
     Informações das ocorrências
+
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
@@ -160,7 +212,9 @@ class OcorrenciaDetailAPIView(RetrieveAPIView):
 
 class OcorrenciaListAPIView(ListAPIView):
     '''
+
     Liste as ocorrências
+
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
@@ -168,7 +222,9 @@ class OcorrenciaListAPIView(ListAPIView):
 
 class OcorrenciaUpdateAPIView(RetrieveUpdateAPIView):
     '''
+
     Edite ocorrência
+
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
@@ -183,10 +239,12 @@ class OcorrenciaDeleteAPIView(DestroyAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 ############################ CATEGORIA ##############################################
-
+# CRUD categoria
 class CategoriaCreateAPIView(CreateAPIView):
     '''
+
     Crie uma nova categoria
+
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
@@ -194,7 +252,9 @@ class CategoriaCreateAPIView(CreateAPIView):
 
 class CategoriaDetailAPIView(RetrieveAPIView):
     '''
+
     Informações das categorias
+
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
@@ -202,7 +262,9 @@ class CategoriaDetailAPIView(RetrieveAPIView):
 
 class CategoriaListAPIView(ListAPIView):
     '''
+
     Liste as categorias
+
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
@@ -210,7 +272,9 @@ class CategoriaListAPIView(ListAPIView):
 
 class CategoriaUpdateAPIView(RetrieveUpdateAPIView):
     '''
+
     Edite uma categoria
+
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
@@ -218,7 +282,9 @@ class CategoriaUpdateAPIView(RetrieveUpdateAPIView):
 
 class CategoriaDeleteAPIView(DestroyAPIView):
     '''
+
     Delete uma categoria
+
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
