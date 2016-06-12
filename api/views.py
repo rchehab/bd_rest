@@ -19,6 +19,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+from api.permissions import DonoOuVigilanteOuAdminPermission, VigilanteOuAdminPermission
+
 
 #Adicionar resposta, descricao
 #usuario feito no API nao consegue acessar o web
@@ -88,6 +90,10 @@ class UsuarioList(APIView):
 
         u.set_password(request.data['senha'])
         request.data['user'] = u.id
+        
+        g = Group.objects.get(id=1)
+        
+        u.groups.add(g)
 
         hashed_password = password.hash_this(request.data['senha'])
         
@@ -172,7 +178,7 @@ class OcorrenciaUpdateAPIView(RetrieveUpdateAPIView):
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, DonoOuVigilanteOuAdminPermission)
 
 class OcorrenciaDeleteAPIView(DestroyAPIView):
     '''
@@ -180,7 +186,7 @@ class OcorrenciaDeleteAPIView(DestroyAPIView):
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, DonoOuVigilanteOuAdminPermission)
 
 ############################ CATEGORIA ##############################################
 
@@ -190,7 +196,7 @@ class CategoriaCreateAPIView(CreateAPIView):
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)       
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, VigilanteOuAdminPermission,)
 
 class CategoriaDetailAPIView(RetrieveAPIView):
     '''
@@ -214,7 +220,7 @@ class CategoriaUpdateAPIView(RetrieveUpdateAPIView):
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, VigilanteOuAdminPermission,)
 
 class CategoriaDeleteAPIView(DestroyAPIView):
     '''
@@ -222,4 +228,4 @@ class CategoriaDeleteAPIView(DestroyAPIView):
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, VigilanteOuAdminPermission)
