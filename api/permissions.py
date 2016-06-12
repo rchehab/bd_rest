@@ -10,9 +10,7 @@ class DonoOuVigilanteOuAdminPermission(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-            print(obj.usuario_ID)
             usuario = Usuario.objects.get(pk=obj.usuario_ID)
-            print(usuario.user.groups.all())
             
             if usuario.user.groups.filter(id=1).exists():
                 
@@ -28,13 +26,8 @@ class VigilanteOuAdminPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
             
-            print(request.user)
-            print(request.user.groups.all())
-            
             if request.user.groups.filter(id=1).exists():
-                print(1)
                 # Write permissions are only allowed to the owner of the snippet
                 return False
             else:
-                print(0)
                 return True
