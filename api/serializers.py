@@ -4,7 +4,7 @@
 
 # Importando os models preestabelecidos pelo Django e os models do UnB Alerta
 from usuario.models import Usuario
-from ocorrencia.models import Categoria, Ocorrencia
+from ocorrencia.models import Categoria, Ocorrencia, Local
 from django.contrib.auth.models import User, Group
 
 from rest_framework import serializers
@@ -48,13 +48,13 @@ class UsuarioSerializer(serializers.ModelSerializer):
     label='CPF',
   )
 
-  rg = serializers.IntegerField(
+  rg = serializers.CharField(
     label='RG',
   )
 
   matricula = serializers.IntegerField(
     label='Matrícula',
-  )
+  ) 
 
   email = serializers.EmailField(
     max_length=45, 
@@ -119,11 +119,18 @@ class OcorrenciaSerializer(serializers.ModelSerializer):
   class Meta:
     model = Ocorrencia
     fields = ( 'id', 'data', 'hora', 'latitude', 'longitude', 'descricao', 'foto', 'validade',
-                'atendida', 'emergencia', 'vitimado', 'repetida', 'resposta', 'usuario_ID', 'tb_categoria_ID')
-
+                'atendida', 'emergencia', 'vitimado', 'repetida', 'resposta', 'usuario_ID', 'tb_categoria_ID', 'tb_local_ID')
+            
 ############################ CATEGORIA ##############################################
 class CategoriaSerializer(serializers.ModelSerializer):
 
   class Meta:
       model = Categoria
-      fields = ('id', 'tipo')
+      fields = ('id', 'descricao')
+
+############################ LOCAL ##############################################
+class LocalSerializer(serializers.ModelSerializer):
+
+  class Meta:
+    model = Local
+    fields = ('id', 'nome', 'pai', 'descricao')

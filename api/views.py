@@ -107,6 +107,7 @@ class UsuarioList(APIView):
     """
     Lista todos os usuários e permite a criação.
     """
+    
     # Função get: Retorna todos os usuários do banco
     def get(self, request, format = None):
         usuario = Usuario.objects.all()
@@ -337,6 +338,7 @@ class CategoriaDeleteAPIView(DestroyAPIView):
 class LocalCreateAPIView(CreateAPIView):
     '''
     Crie uma nova local
+
     '''
     queryset = Local.objects.all()
     serializer_class = LocalSerializer
