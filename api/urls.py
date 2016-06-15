@@ -24,8 +24,12 @@ from .views import (
     CategoriaDetailAPIView,
     CategoriaListAPIView,
     CategoriaUpdateAPIView,
-    CategoriaDeleteAPIView
-
+    CategoriaDeleteAPIView,
+    LocalCreateAPIView,
+    LocalDetailAPIView,
+    LocalListAPIView,
+    LocalUpdateAPIView,
+    LocalDeleteAPIView
 )
 
 # Urls que seguem da extensão api
@@ -67,5 +71,15 @@ urlpatterns = [
     url(r'^categoria/(?P<pk>\d+)/$', CategoriaDetailAPIView.as_view(), name="Categoria Detail"),
     url(r'^categoria/(?P<pk>\d+)/edit/$', CategoriaUpdateAPIView.as_view(), name="Categoria Update"),
     url(r'^categoria/(?P<pk>\d+)/delete/$', CategoriaDeleteAPIView.as_view(), name="Categoria Delete"),
+    
+
+    ########################### Locais ##############################################
+    # Acesso a lista de Locals das ocorrências e seus detalhes
+    # Bem como as funções create, retrieve, edit e delete
+    url(r'^local$', LocalListAPIView.as_view(), name="Local List"),
+    url(r'^local/create/$', LocalCreateAPIView.as_view(), name= "Create Local"),
+    url(r'^local/(?P<pk>\d+)/$', LocalDetailAPIView.as_view(), name="Local Detail"),
+    url(r'^local/(?P<pk>\d+)/edit/$', LocalUpdateAPIView.as_view(), name="Local Update"),
+    url(r'^local/(?P<pk>\d+)/delete/$', LocalDeleteAPIView.as_view(), name="Local Delete"),
     
 ]
