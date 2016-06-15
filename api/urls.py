@@ -12,6 +12,9 @@ from .views import (
     GroupListAPIView,
     UsuarioList,
     UsuarioDetail,
+    UsuarioDelete,
+    UsuarioEdit,
+    UsuarioCreate,
     OcorrenciaCreateAPIView,
     OcorrenciaDetailAPIView,
     OcorrenciaListAPIView,
@@ -40,10 +43,11 @@ urlpatterns = [
 
     ############################ USUÁRIO ##############################################
     # Acesso  a lista de usuários e seus detalhes
-    # Funções disponibilizadas na List: Create e Retrieve
     url(r'^usuario$', UsuarioList.as_view() , name = "Usuario List"),
-    # Funções disponibilizadas em Detail: Retrieve, Edit, Delete
-    url(r'^usuario/(?P<pk>\d+)/$', UsuarioDetail.as_view(), name = "Usuario Detail"),
+    url(r'^usuario/create/$', UsuarioCreate.as_view(), name = "Create Usuario" ),
+    url(r'^usuario/(?P<pk>\d+)/$', UsuarioDetail.as_view(), name = "UsuarioDetail"),
+    url(r'^usuario/(?P<pk>\d+)/edit/$', UsuarioEdit.as_view(), name = "Usuario Update"),
+    url(r'^usuario/(?P<pk>\d+)/delete/$', UsuarioDelete.as_view(), name = "Usuario Delete"),
 
     ############################ OCORRÊNCIA ##############################################
     # Acesso a lista de ocorrências e seus detalhes

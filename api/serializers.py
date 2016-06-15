@@ -95,8 +95,8 @@ class OcorrenciaSerializer(serializers.ModelSerializer):
 
   descricao = serializers.CharField(
     allow_blank = True, 
-    max_length = None, 
-    min_length = 20,
+    max_length = None,
+    min_length = None,
     label = 'Descrição',
   )
 
@@ -105,6 +105,10 @@ class OcorrenciaSerializer(serializers.ModelSerializer):
     min_length=None, 
     max_length=20,
     label = 'Resposta',
+  )
+
+  validade = serializers.NullBooleanField(
+    label = 'Validade',
   )
 
   emergencia = serializers.NullBooleanField(
