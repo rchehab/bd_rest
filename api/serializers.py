@@ -118,7 +118,7 @@ class OcorrenciaSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Ocorrencia
-    fields = ( 'id', 'data', 'hora', 'latitude', 'longitude', 'descricao', 'foto', 'validade',
+    fields = ('id','data', 'hora', 'latitude', 'longitude', 'descricao', 'foto', 'validade',
                 'atendida', 'emergencia', 'vitimado', 'repetida', 'resposta', 'usuario_ID', 'tb_categoria_ID', 'tb_local_ID')
             
 ############################ CATEGORIA ##############################################

@@ -33,7 +33,18 @@ from api.serializers import (
     )
 
 # Importando arquivo com as permissões de User 
-from rest_framework import permissions
+from rest_framework. permissions import (
+
+    AllowAny,
+    IsAuthenticated,
+    IsAdminUser, 
+    IsAuthenticatedOrReadOnly
+
+    )
+
+from api.permissions import (
+    UserIsOwnerOrAdmin
+    )
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 # Importando classe password, utilizada para o hashing da senha
 from api.password import password
@@ -57,7 +68,7 @@ class UserDetailAPIView(RetrieveAPIView):
     '''
     queryset = User.objects.all() # Retorna todos os User
     serializer_class = UserSerializer # Utiliza a classe serializer User
-    #permission_classes = (permissions.IsAdminUser,) 
+    permission_classes = [IsAdminUser] 
 
 class UserListAPIView(ListAPIView):
     '''
@@ -67,7 +78,7 @@ class UserListAPIView(ListAPIView):
     '''
     queryset = User.objects.all() # Retorna todos os User
     serializer_class = UserSerializer # Utiliza a classe serializer User
-    #permission_classes = (permissions.IsAdminUser,)
+    permission_classes = [IsAdminUser] 
 
 ############################ GROUP ##############################################
 # CRUD Group
@@ -81,7 +92,7 @@ class GroupDetailAPIView(RetrieveAPIView):
     '''
     queryset = Group.objects.all() # Retorna todos os Groups
     serializer_class = GroupSerializer # Utiliza a classe serializer Group
-   # permission_classes = (permissions.IsAdminUser,)
+    permission_classes = [IsAdminUser]  # Só quem tem acesso é o Admin
 
 
 class GroupListAPIView(ListAPIView):
@@ -92,7 +103,7 @@ class GroupListAPIView(ListAPIView):
     '''
     queryset = Group.objects.all() # Retorna todos os Groups
     serializer_class = GroupSerializer # Utiliza a classe serializer Group
-   #permission_classes = (permissions.IsAdminUser,)
+    permission_classes = [IsAdminUser] # Só quem tem acesso é o Admin
 
 ############################ USUÁRIO ##############################################
 # CRUD Usuário
@@ -100,10 +111,6 @@ class GroupListAPIView(ListAPIView):
 # Lista de todos os usários
 # Permissão: Quem tem acesso é o Admin
 class UsuarioList(APIView):
-    
-    authentication_classes = (SessionAuthentication, BasicAuthentication)
-
-
     """
 
     Lista todos os usuários e permite a criação.
@@ -115,6 +122,7 @@ class UsuarioList(APIView):
         serializer = UsuarioSerializer(usuario, many = True)
         return Response(serializer.data)
 
+    permission_classes = [IsAdminUser] # Só o admin pode ver todos os usuários
     
 # Criação de um novo usuário
 # Permissão: liberado pra todos
@@ -125,7 +133,6 @@ class UsuarioCreate(APIView):
 
     """
     # Função post: Cria um novo usuário 
-
     def post(self, request, format = None):
         
         u = User.objects.create(
@@ -147,10 +154,10 @@ class UsuarioCreate(APIView):
 
         return Response(usuario.errors, status=status.HTTP_400_BAD_REQUEST) #Falhou
 
-    #permission_classes = (permissions.AllowAny,)
+    permission_classes = [AllowAny] # Qualquer um pode criar usuários
 
 # Detalhes de um Usuário
-# Permissão: liberado para o próprio usuário e Admin *
+# Permissão: liberado para o próprio usuário 
 class UsuarioDetail(APIView):
     """
 
@@ -163,15 +170,34 @@ class UsuarioDetail(APIView):
             return Usuario.objects.get(pk = pk)
         except Usuario.DoesNotExist:
             raise Http404
+    # PERMISSÕES 
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated()
+
+    def check_object_permission(self, user, obj):
+        return (user and user.is_authenticated() and
+          (user.is_staff or obj.user_id == user.id))
+
+    def has_object_permission(self, request, view, obj):
+        return True
+    # FIM DAS PERMISSÕES
 
     # Função que retorna os detalhes sobre um usuário específico
     def get(self, request, pk, format = None):
+        
         usuario = self.get_object(pk)
         serializer = UsuarioSerializer(usuario)
-        return Response(serializer.data)
+        
+        x = self.has_permission(request, UsuarioDetail)
+        y = self.check_object_permission(request.user, usuario)
+        z = self.has_object_permission(request, UsuarioDetail, usuario) 
+        
+        if (x and y and z):
+            return Response(serializer.data)
+        return Response(status = status.HTTP_204_NO_CONTENT)
 
 # Edição de um usuário
-# Permissão: liberado para o próprio usuário e admin*
+# Permissão: liberado para o próprio usuário e admin
 class UsuarioEdit(APIView):
     """
 
@@ -179,11 +205,31 @@ class UsuarioEdit(APIView):
 
     """
 
+    # PERMISSÕES 
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated()
+
+    def check_object_permission(self, user, obj):
+        return (user and user.is_authenticated() and
+          (user.is_staff or obj.user_id == user.id))
+
+    def has_object_permission(self, request, view, obj):
+        return True
+    # FIM DAS PERMISSÕES
+
     # Função que retorna os detalhes sobre um usuário específico
     def get(self, request, pk, format = None):
+        
         usuario = self.get_object(pk)
         serializer = UsuarioSerializer(usuario)
-        return Response(serializer.data)
+        
+        x = self.has_permission(request, UsuarioEdit)
+        y = self.check_object_permission(request.user, usuario)
+        z = self.has_object_permission(request, UsuarioEdit, usuario) 
+        
+        if (x and y and z):
+            return Response(serializer.data)
+        return Response(status = status.HTTP_204_NO_CONTENT)
 
 
     # Função que retorna um objeto Usuário
@@ -199,17 +245,23 @@ class UsuarioEdit(APIView):
         usuario = self.get_object(pk)
         serializer = UsuarioSerializer(usuario, data = request.data)
         
-        # Se o serailizer for valido poderá editar os campos
-        if serializer.is_valid():
-            if request.data['login'] != usuario.login or request.data['email'] != usuario.email or request.data['senha'] != usuario.senha:
-                user = User.objects.get(pk = usuario.user.pk)
-                user.username = request.data['login']
-                user.email = request.data['email']
-                user.set_password(request.data['senha'])
-                user.save()
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        x = self.has_permission(request, UsuarioEdit)
+        y = self.check_object_permission(request.user, usuario)
+        z = self.has_object_permission(request, UsuarioEdit, usuario) 
+        
+        if (x and y and z):
+            # Se o serailizer for valido poderá editar os campos
+            if serializer.is_valid():
+                if request.data['login'] != usuario.login or request.data['email'] != usuario.email or request.data['senha'] != usuario.senha:
+                    user = User.objects.get(pk = usuario.user.pk)
+                    user.username = request.data['login']
+                    user.email = request.data['email']
+                    user.set_password(request.data['senha'])
+                    user.save()
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status = status.HTTP_204_NO_CONTENT)
 
 # Deletar um usuário
 # Permissão liberada para o admin
@@ -238,7 +290,7 @@ class UsuarioDelete(APIView):
 
         return Response(status = status.HTTP_204_NO_CONTENT)
 
-    #permission_classes(permissions.IsAdminUser)
+    permission_classes(IsAdminUser)
 
 ############################ OCORRÊNCIA ##############################################
 # CRUD ocorrências
@@ -251,8 +303,8 @@ class OcorrenciaCreateAPIView(CreateAPIView):
 
     '''
     queryset = Ocorrencia.objects.all()
-    serializer_class = OcorrenciaSerializer
-   #permission_classes = (permissions.IsAuthenticated,)       
+    serializer_class = OcorrenciaSerializer  
+    permission_classes = [IsAuthenticated]
 
 # Detalhes de uma ocorrência
 # Permissão: dono da ocorrência, admin, vigilante*
@@ -264,7 +316,7 @@ class OcorrenciaDetailAPIView(RetrieveAPIView):
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
-   # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+   #permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 # Lista de ocorrências
 # Permissão: usuario dono da ocorrencia, ocorrências validadas*
@@ -276,7 +328,7 @@ class OcorrenciaListAPIView(ListAPIView):
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
-   # permission_classes = (permissions.IsOwner,)
+    #permission_classes = (IsOwner,)
 
 # Editar ocorrências
 # Permissão: usuário dono da ocorrência se ela nao tiver sido validada, vigilante,admin*
@@ -288,7 +340,7 @@ class OcorrenciaUpdateAPIView(RetrieveUpdateAPIView):
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
-   # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+   # permission_classes = (IsAuthenticatedOrReadOnly,)
 
 # Deletar ocorrência
 # Permissão: usuário dono da ocorrência se ela não tiver sido validada, vigilante, admin*
@@ -298,7 +350,7 @@ class OcorrenciaDeleteAPIView(DestroyAPIView):
     '''
     queryset = Ocorrencia.objects.all()
     serializer_class = OcorrenciaSerializer
-   # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+   # permission_classes = (IsAuthenticatedOrReadOnly,)
 
 ############################ CATEGORIA ##############################################
 # CRUD Categoria
@@ -313,7 +365,7 @@ class CategoriaCreateAPIView(CreateAPIView):
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-   # permission_classes = (permissions.IsAdminUser,)      
+    permission_classes = (IsAdminUser,)      
 
 class CategoriaDetailAPIView(RetrieveAPIView):
     '''
@@ -323,7 +375,7 @@ class CategoriaDetailAPIView(RetrieveAPIView):
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-   # permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAdminUser,)
 
 class CategoriaListAPIView(ListAPIView):
     '''
@@ -333,7 +385,7 @@ class CategoriaListAPIView(ListAPIView):
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-   # permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAdminUser,)
 
 class CategoriaUpdateAPIView(RetrieveUpdateAPIView):
     '''
@@ -343,7 +395,7 @@ class CategoriaUpdateAPIView(RetrieveUpdateAPIView):
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-  #  permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAdminUser,)
 
 class CategoriaDeleteAPIView(DestroyAPIView):
     '''
@@ -353,7 +405,7 @@ class CategoriaDeleteAPIView(DestroyAPIView):
     '''
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-   # permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAdminUser,)
 
 ############################ LOCAL ##############################################
 # CRUD Local
@@ -368,7 +420,7 @@ class LocalCreateAPIView(CreateAPIView):
     '''
     queryset = Local.objects.all()
     serializer_class = LocalSerializer
-   # permission_classes = (permissions.IsAdminUser,)      
+    permission_classes = (IsAdminUser,)      
 
 class LocalDetailAPIView(RetrieveAPIView):
     '''
@@ -378,7 +430,7 @@ class LocalDetailAPIView(RetrieveAPIView):
     '''
     queryset = Local.objects.all()
     serializer_class = LocalSerializer
-   # permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAdminUser,)
 
 class LocalListAPIView(ListAPIView):
     '''
@@ -388,7 +440,7 @@ class LocalListAPIView(ListAPIView):
     '''
     queryset = Local.objects.all()
     serializer_class = LocalSerializer
-   # permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAdminUser,)
 
 class LocalUpdateAPIView(RetrieveUpdateAPIView):
     '''
@@ -398,7 +450,7 @@ class LocalUpdateAPIView(RetrieveUpdateAPIView):
     '''
     queryset = Local.objects.all()
     serializer_class = LocalSerializer
-  #  permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAdminUser,)
 
 class LocalDeleteAPIView(DestroyAPIView):
     '''
@@ -408,4 +460,4 @@ class LocalDeleteAPIView(DestroyAPIView):
     '''
     queryset = Local.objects.all()
     serializer_class = LocalSerializer
-   # permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAdminUser,)
