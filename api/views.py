@@ -42,9 +42,9 @@ from rest_framework. permissions import (
 
     )
 
-from api.permissions import (
-    UserIsOwnerOrAdmin
-    )
+#from api.permissions import (
+#    UserIsOwnerOrAdmin
+#    )
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 # Importando classe password, utilizada para o hashing da senha
 from api.password import password
@@ -145,8 +145,8 @@ class UsuarioCreate(APIView):
 
         if usuario.is_valid():
             
-            u.save()
             usuario.save()
+            u.save()
             return Response(usuario.data, status=status.HTTP_201_CREATED) #Sucedeu
 
         return Response(usuario.errors, status=status.HTTP_400_BAD_REQUEST) #Falhou
