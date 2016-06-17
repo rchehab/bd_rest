@@ -56,6 +56,7 @@ from rest_framework import status
 from rest_framework.decorators import permission_classes
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
+from django.db import utils
 
 ############################ USER ##############################################
 # Listagem de Users internos do Django bem quanto seus detalhes.
@@ -140,15 +141,19 @@ class UsuarioCreate(APIView):
         u.set_password(request.data['senha'])
 
         request.data['user'] = u.id
-
         usuario = UsuarioSerializer(data = request.data)
 
         if usuario.is_valid():
             
-            usuario.save()
+            try:
+                usuario.save()
+            except utils.IntegrityError:
+                u.delete()
+                return Response(usuario.errors, status=status.HTTP_400_BAD_REQUEST) #Falhou
             u.save()
             return Response(usuario.data, status=status.HTTP_201_CREATED) #Sucedeu
 
+        u.delete()
         return Response(usuario.errors, status=status.HTTP_400_BAD_REQUEST) #Falhou
 
     permission_classes = [AllowAny] # Qualquer um pode criar usuários
